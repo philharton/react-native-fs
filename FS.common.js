@@ -15,6 +15,7 @@ var base64 = require('base-64');
 var utf8 = require('utf8');
 
 var _readDir = Promise.promisify(RNFSManager.readDir);
+var _readDirAssets = Promise.promisify(RNFSManager.readDirAssets);
 var _exists = Promise.promisify(RNFSManager.exists);
 var _stat = Promise.promisify(RNFSManager.stat);
 var _readFile = Promise.promisify(RNFSManager.readFile);
@@ -59,6 +60,21 @@ var RNFS = {
         }));
       })
       .catch(convertError);
+  },
+
+  // Android-only
+  readDirAssets(dirpath) {
+    return _readDirAssets(dirpath)
+        .then(files => {
+          return files.map(file => ({
+            name: file.name,
+            path: file.path,
+            size: file.size,
+            isFile: () => file.type === NSFileTypeRegular,
+            isDirectory: () => file.type === NSFileTypeDirectory,
+          }));
+        })
+        .catch(convertError)
   },
 
   // Node style version (lowercase d). Returns just the names

@@ -11,6 +11,8 @@ import android.util.Base64;
 import android.content.Context;
 import android.support.annotation.Nullable;
 import android.util.SparseArray;
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -145,6 +147,43 @@ public class RNFSManager extends ReactContextBaseJavaModule {
     } catch (Exception ex) {
       ex.printStackTrace();
       callback.invoke(makeErrorPayload(ex));
+    }
+  }
+
+  @ReactMethod
+  public void readDirAssets(String directory, Callback callback) {
+    try {
+      AssetManager assetManager = getReactApplicationContext().getAssets();
+      String[] list = assetManager.list(directory);
+
+      WritableArray fileMaps = Arguments.createArray();
+      for (String childFile : list) {
+        WritableMap fileMap = Arguments.createMap();
+
+        fileMap.putString("name", childFile);
+        fileMap.putString("path", childFile);
+        int length = 0;
+        boolean isDirectory = false;
+        try {
+          AssetFileDescriptor assetFileDescriptor = assetManager.openFd(childFile);
+          if (assetFileDescriptor != null) {
+            length = (int) assetFileDescriptor.getLength();
+            assetFileDescriptor.close();
+          }
+        } catch (IOException ex) {
+          //.. ah.. is a directory!
+          isDirectory = true;
+        }
+        fileMap.putInt("size", length);
+        fileMap.putInt("type", isDirectory ? 1 : 0); // if 0, probably a folder..
+
+        fileMaps.pushMap(fileMap);
+      }
+      callback.invoke(null, fileMaps);
+
+    } catch (IOException e) {
+      e.printStackTrace();
+      callback.invoke(makeErrorPayload(e));
     }
   }
 
