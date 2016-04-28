@@ -15,11 +15,11 @@ var base64 = require('base-64');
 var utf8 = require('utf8');
 
 var _readDir = Promise.promisify(RNFSManager.readDir);
-var _readDirAssets = Promise.promisify(RNFSManager.readDirAssets);
+var _readDirAssets = RNFSManager.readDirAssets ? Promise.promisify(RNFSManager.readDirAssets) : undefined;
 var _exists = Promise.promisify(RNFSManager.exists);
 var _stat = Promise.promisify(RNFSManager.stat);
 var _readFile = Promise.promisify(RNFSManager.readFile);
-var _readFileAssets = Promise.promisify(RNFSManager.readFileAssets);
+var _readFileAssets = RNFSManager.readFileAssets ? Promise.promisify(RNFSManager.readFileAssets) : undefined;
 var _writeFile = Promise.promisify(RNFSManager.writeFile);
 var _moveFile = Promise.promisify(RNFSManager.moveFile);
 var _unlink = Promise.promisify(RNFSManager.unlink);
