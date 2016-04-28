@@ -11,6 +11,8 @@ import android.util.Base64;
 import android.content.Context;
 import android.support.annotation.Nullable;
 import android.util.SparseArray;
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -105,6 +107,36 @@ public class RNFSManager extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  public void readFileAssets(String filepath, Callback callback) {
+    InputStream stream = null;
+    try {
+      // ensure isn't a directory
+      AssetManager assetManager = getReactApplicationContext().getAssets();
+      stream = assetManager.open(filepath, 0);
+      if (stream == null) {
+        callback.invoke(makeErrorPayload(new Exception("Failed to open file")));
+        return;
+      }
+
+      byte[] buffer = new byte[stream.available()];
+      stream.read(buffer);
+      String base64Content = Base64.encodeToString(buffer, Base64.NO_WRAP);
+
+      callback.invoke(null, base64Content);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      callback.invoke(makeErrorPayload(ex));
+    } finally {
+      if (stream != null) {
+        try {
+          stream.close();
+        } catch (IOException ignored) {
+        }
+      }
+    }
+  }
+
+  @ReactMethod
   public void moveFile(String filepath, String destPath, Callback callback) {
     try {
       File from = new File(filepath);
@@ -145,6 +177,44 @@ public class RNFSManager extends ReactContextBaseJavaModule {
     } catch (Exception ex) {
       ex.printStackTrace();
       callback.invoke(makeErrorPayload(ex));
+    }
+  }
+
+  @ReactMethod
+  public void readDirAssets(String directory, Callback callback) {
+    try {
+      AssetManager assetManager = getReactApplicationContext().getAssets();
+      String[] list = assetManager.list(directory);
+
+      WritableArray fileMaps = Arguments.createArray();
+      for (String childFile : list) {
+        WritableMap fileMap = Arguments.createMap();
+
+        fileMap.putString("name", childFile);
+        String path = String.format("%s/%s", directory, childFile);
+        fileMap.putString("path", path);
+        int length = 0;
+        boolean isDirectory = false;
+        try {
+          AssetFileDescriptor assetFileDescriptor = assetManager.openFd(path);
+          if (assetFileDescriptor != null) {
+            length = (int) assetFileDescriptor.getLength();
+            assetFileDescriptor.close();
+          }
+        } catch (IOException ex) {
+          //.. ah.. is a directory!
+          isDirectory = true;
+        }
+        fileMap.putInt("size", length);
+        fileMap.putInt("type", isDirectory ? 1 : 0); // if 0, probably a folder..
+
+        fileMaps.pushMap(fileMap);
+      }
+      callback.invoke(null, fileMaps);
+
+    } catch (IOException e) {
+      e.printStackTrace();
+      callback.invoke(makeErrorPayload(e));
     }
   }
 
