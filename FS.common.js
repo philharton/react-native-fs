@@ -26,6 +26,7 @@ var _unlink = Promise.promisify(RNFSManager.unlink);
 var _mkdir = Promise.promisify(RNFSManager.mkdir);
 var _downloadFile = Promise.promisify(RNFSManager.downloadFile);
 var _pathForBundle = Promise.promisify(RNFSManager.pathForBundle);
+var _getFSInfo = Promise.promisify(RNFSManager.getFSInfo);
 
 var convertError = (err) => {
   if (err.isOperational && err.cause) {
@@ -126,7 +127,7 @@ var RNFS = {
       })
       .catch(convertError);
   },
-  
+
   exists(filepath) {
     return _exists(filepath)
       .catch(convertError);
@@ -167,6 +168,11 @@ var RNFS = {
 
   pathForBundle(bundleName) {
     return _pathForBundle(bundleName);
+  },
+
+  getFSInfo() {
+    return _getFSInfo()
+      .catch(convertError);
   },
 
   unlink(filepath) {
