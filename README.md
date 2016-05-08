@@ -225,6 +225,16 @@ Reads the file at `path` in the Android app's assets folder and return contents.
 
 Note: Android only.
 
+### `promise copyFileAssets(source, destination)`
+
+Copies the file at `source` in the Android app's assets folder and copies it to the given `destination` path.
+
+`source` (`String`) is the relative path to the file from the root of the `assets` folder.
+
+`destination` (`String`) is the absolute path to the destination including the filename. 
+
+Note: Android only.
+
 ### `promise writeFile(filepath, contents [, encoding, options])`
 
 Write the `contents` to `filepath`. `encoding` can be one of `utf8` (default), `ascii`, `base64`. `options` optionally takes an object specifying the file's properties, like mode etc.
