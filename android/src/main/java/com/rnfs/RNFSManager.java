@@ -137,46 +137,6 @@ public class RNFSManager extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void copyFromAssets(String fromPath, String toPath, Callback callback) {
-    InputStream inputStream = null;
-    OutputStream outputStream = null;
-    try {
-      // ensure isn't a directory
-      AssetManager assetManager = getReactApplicationContext().getAssets();
-      inputStream = assetManager.open(fromPath, 2);
-      if (inputStream == null) {
-        callback.invoke(makeErrorPayload(new Exception("Failed to open file")));
-        return;
-      }
-
-      File destinationFile = new File(toPath);
-      outputStream = new FileOutputStream(destinationFile);
-      byte[] buf = new byte[1024];
-      int len;
-      while ((len = inputStream.read(buf)) > 0)
-        outputStream.write(buf, 0, len);
-
-      callback.invoke(null, true);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      callback.invoke(makeErrorPayload(ex));
-    } finally {
-      if (inputStream != null) {
-        try {
-          inputStream.close();
-        } catch (IOException ignored) {
-        }
-      }
-      if (outputStream != null) {
-        try {
-          outputStream.close();
-        } catch (IOException ignored) {
-        }
-      }
-    }
-  }
-
-  @ReactMethod
   public void moveFile(String filepath, String destPath, Callback callback) {
     try {
       File from = new File(filepath);
