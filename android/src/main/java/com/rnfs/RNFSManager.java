@@ -7,7 +7,6 @@ import java.util.ArrayList;
 
 import android.os.Environment;
 import android.os.AsyncTask;
-import android.os.StatFs;
 import android.util.Base64;
 import android.content.Context;
 import android.support.annotation.Nullable;
@@ -426,26 +425,6 @@ public class RNFSManager extends ReactContextBaseJavaModule {
   @ReactMethod
   public void pathForBundle(String bundleNamed, Callback callback) {
     // TODO: Not sure what equilivent would be?
-  }
-
-  @ReactMethod
-  public void getFSInfo(Callback callback) {
-    File path = Environment.getDataDirectory();
-    StatFs stat = new StatFs(path.getPath());
-    long totalSpace;
-    long freeSpace;
-    if (android.os.Build.VERSION.SDK_INT >= 18) {
-      totalSpace = stat.getTotalBytes();
-      freeSpace = stat.getFreeBytes();
-    } else {
-      long blockSize = stat.getBlockSize();
-      totalSpace = blockSize * stat.getBlockCount();
-      freeSpace = blockSize * stat.getAvailableBlocks();
-    }
-    WritableMap info = Arguments.createMap();
-    info.putDouble("totalSpace", (double)totalSpace);   // Int32 too small, must use Double
-    info.putDouble("freeSpace", (double)freeSpace);
-    callback.invoke(null, info);
   }
 
   private WritableMap makeErrorPayload(Exception ex) {
